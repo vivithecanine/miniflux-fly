@@ -1,0 +1,57 @@
+app = "<your app>"
+
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[build]
+  image = "docker.io/miniflux/miniflux:2.0.37-distroless"
+
+[env]
+  METRICS_ALLOWED_NETWORKS = "0.0.0.0/0"
+  METRICS_COLLECTOR = "1"
+  RUN_MIGRATIONS = "1"
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+  cmd = []
+  entrypoint = []
+  exec = []
+
+[metrics]
+  path = "/metrics"
+  port = 8080
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+  tcp_checks = []
+
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.http_checks]]
+    grace_period = "6s"
+    interval = "10s"
+    method = "get"
+    path = "/healthcheck"
+    protocol = "http"
+    restart_limit = 0
+    timeout = "2s"
+    tls_skip_verify = true
+
+    [services.http_checks.headers]
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
